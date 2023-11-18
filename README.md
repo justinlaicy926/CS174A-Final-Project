@@ -1,7 +1,7 @@
 # CS174A Final Project
 
 ## Team Members
-Chenyang Lai \n
+Chenyang Lai
 Yichen Shen
 Xiaojie Zhou
 
