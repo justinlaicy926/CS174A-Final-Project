@@ -49,7 +49,7 @@ export class Final_project extends Scene {
                 {ambient: 0, diffusivity: 1, color: hex_color("#B08040"), specularity: 1}),
             //fix: confusing ring bs
             ring: new Material(new Ring_Shader(),
-                {ambient: 1, diffusivity: 0, color: hex_color("#B08040"), specularity: 0, smoothness: 0}),
+                {ambient: 1, diffusivity: 0, color: color(1, 0, 0, 1), specularity: 0, smoothness: 0}),
             planet4: new Material(new defs.Phong_Shader(),
                 {ambient: 0, color: hex_color("#add8e6"), specularity: 1}),
             moon: new Material(new defs.Phong_Shader(),
@@ -59,17 +59,16 @@ export class Final_project extends Scene {
         this.initial_camera_location = Mat4.look_at(vec3(0, 10, 20), vec3(0, 0, 0), vec3(0, 1, 0));
     }
 
-    make_control_panel() {
+    make_control_panel(program_state) {
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
-        this.key_triggered_button("View solar system", ["Control", "0"], () => this.attached = () => null);
+        this.key_triggered_button("Move Farther", ["o"], () => this.attached = () => this.farther);
         this.new_line();
-        this.key_triggered_button("Attach to planet 1", ["Control", "1"], () => this.attached = () => this.planet_1);
-        this.key_triggered_button("Attach to planet 2", ["Control", "2"], () => this.attached = () => this.planet_2);
-        this.new_line();
-        this.key_triggered_button("Attach to planet 3", ["Control", "3"], () => this.attached = () => this.planet_3);
-        this.key_triggered_button("Attach to planet 4", ["Control", "4"], () => this.attached = () => this.planet_4);
-        this.new_line();
-        this.key_triggered_button("Attach to moon", ["Control", "m"], () => this.attached = () => this.moon);
+        this.key_triggered_button("Move Closer", ["Control", "1"], () => this.attached = () => this.closer);
+    }
+
+    move_farther(program_state) {
+        this.initial_camera_location = this.initial_camera_location.times(Mat4.translation(0, 0, 5));
+        program_state.camera_inverse = this.initial_camera_location.map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1));
     }
 
     display(context, program_state) {
@@ -86,7 +85,7 @@ export class Final_project extends Scene {
 
         //Sun Operations
         const ms = program_state.animation_time/1000;
-        let sun = Mat4.identity();
+        let model_transform = Mat4.identity();
 
         //sun radius shrinks from 1 to 3 to 1 over 10 seconds
         //correct numbers
@@ -101,83 +100,87 @@ export class Final_project extends Scene {
 
 
 
-        //scale the radius of the sun based on time
-        sun = sun.times(Mat4.scale(sun_radius, sun_radius, sun_radius));
+
 
         // TODO: Lighting (Requirement 2)
         //light source at the center of the sun
         program_state.lights = [new Light(vec4(0,0,0,1), color(R, G, B, 1), 10**sun_radius)];
 
-        this.shapes.sun.draw(context, program_state, sun, this.materials.sun.override({color: color(R, G, B, 1.0)}));
+        // this.shapes.
+        let center = model_transform.times(Mat4.scale(0.5, 0.5, 0.1));
+        this.shapes.sphere.draw(context, program_state, center, this.materials.sun.override({color: color(1, 0, 0, 1)}));
+        center = center.times(Mat4.scale(2.0, 2.0, 10.0));
 
-
-        // TODO: Create Planets (Requirement 1)
-        // this.shapes.[XXX].draw([XXX]) // <--example
-        //draw planet 1
-        let planet1 = Mat4.identity();
-        planet1 = planet1.times(Mat4.rotation(ms, 0, 1, 0))
-            .times(Mat4.translation(5, 0, 0));
-        this.shapes.planet1.draw(context, program_state, planet1, this.materials.planet1);
-
-        //planet 2
-        let planet2 = Mat4.identity();
-        planet2 = planet2.times(Mat4.rotation(ms*0.9, 0, 1, 0))
-            .times(Mat4.translation(8, 0, 0));
-        //gourand odd, phong even
-        if (Math.floor(ms%2) !== 0){
-            this.shapes.planet2.draw(context,program_state,planet2,this.materials.planet2_gouraud);
-        }
-        else{
-            this.shapes.planet2.draw(context,program_state,planet2,this.materials.planet2_phong);
-        }
-
-        //planet 3
-        let planet3 = Mat4.identity();
-        //planet3 self rotation
-        planet3 = planet3.times(Mat4.rotation(ms*0.8, 0, 1, 0))
-            .times(Mat4.translation(11, 0, 0))
-            .times(Mat4.rotation(Math.sin(ms), 1, 0, 0));
-        this.shapes.planet3.draw(context, program_state, planet3, this.materials.planet3);
-
-        //planet3's ring
-        //fix: ring not appearing
-        let ring = planet3.times(Mat4.scale(3, 3, 0.1));
+        let ring = center.times(Mat4.scale(3, 3, 0.1));
         this.shapes.ring.draw(context, program_state, ring, this.materials.ring);
 
-        //planet4
-        let planet4 = Mat4.identity();
-        planet4  = planet4.times(Mat4.rotation(ms*0.7, 0, 1, 0))
-            .times(Mat4.translation(14, 0, 0));
-        this.shapes.planet4.draw(context, program_state, planet4, this.materials.planet4);
 
-        //planet4's moon
-        let moon = planet4 ;
-        moon = moon.times(Mat4.rotation(ms*0.7, 0, 1, 0))
-            .times(Mat4.translation(-1.5, 0, 0))
-            .times(Mat4.scale(0.3,0.3,0.3));
-        this.shapes.moon.draw(context, program_state, moon, this.materials.moon);
-
-        const light_position = vec4(0, 5, 5, 1);
-        // The parameters of the Light are: position, color, size
-        //program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
-
-        // TODO:  Fill in matrix operations and drawing code to draw the solar system scene (Requirements 3 and 4)
-        //const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
-        const yellow = hex_color("#fac91a");
-        //let model_transform = Mat4.identity();
+        // // TODO: Create Planets (Requirement 1)
+        // // this.shapes.[XXX].draw([XXX]) // <--example
+        // //draw planet 1
+        // let planet1 = Mat4.identity();
+        // planet1 = planet1.times(Mat4.rotation(ms, 0, 1, 0))
+        //     .times(Mat4.translation(5, 0, 0));
+        // this.shapes.planet1.draw(context, program_state, planet1, this.materials.planet1);
+        //
+        // //planet 2
+        // let planet2 = Mat4.identity();
+        // planet2 = planet2.times(Mat4.rotation(ms*0.9, 0, 1, 0))
+        //     .times(Mat4.translation(8, 0, 0));
+        // //gourand odd, phong even
+        // if (Math.floor(ms%2) !== 0){
+        //     this.shapes.planet2.draw(context,program_state,planet2,this.materials.planet2_gouraud);
+        // }
+        // else{
+        //     this.shapes.planet2.draw(context,program_state,planet2,this.materials.planet2_phong);
+        // }
+        //
+        // //planet 3
+        // let planet3 = Mat4.identity();
+        // //planet3 self rotation
+        // planet3 = planet3.times(Mat4.rotation(ms*0.8, 0, 1, 0))
+        //     .times(Mat4.translation(11, 0, 0))
+        //     .times(Mat4.rotation(Math.sin(ms), 1, 0, 0));
+        // this.shapes.planet3.draw(context, program_state, planet3, this.materials.planet3);
+        //
+        // //planet3's ring
+        // //fix: ring not appearing
+        // let ring = planet3.times(Mat4.scale(3, 3, 0.1));
+        // this.shapes.ring.draw(context, program_state, ring, this.materials.ring);
+        //
+        // //planet4
+        // let planet4 = Mat4.identity();
+        // planet4  = planet4.times(Mat4.rotation(ms*0.7, 0, 1, 0))
+        //     .times(Mat4.translation(14, 0, 0));
+        // this.shapes.planet4.draw(context, program_state, planet4, this.materials.planet4);
+        //
+        // //planet4's moon
+        // let moon = planet4 ;
+        // moon = moon.times(Mat4.rotation(ms*0.7, 0, 1, 0))
+        //     .times(Mat4.translation(-1.5, 0, 0))
+        //     .times(Mat4.scale(0.3,0.3,0.3));
+        // this.shapes.moon.draw(context, program_state, moon, this.materials.moon);
+        //
+        // const light_position = vec4(0, 5, 5, 1);
+        // // The parameters of the Light are: position, color, size
+        // //program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
+        //
+        // // TODO:  Fill in matrix operations and drawing code to draw the solar system scene (Requirements 3 and 4)
+        // //const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
+        // const yellow = hex_color("#fac91a");
+        // //let model_transform = Mat4.identity();
 
         //fix: view solar system does not work
-        this.planet_1 = Mat4.inverse(planet1.times(Mat4.translation(0, 0, 5)));
-        this.planet_2 = Mat4.inverse(planet2.times(Mat4.translation(0, 0, 5)));
-        this.planet_3 = Mat4.inverse(planet3.times(Mat4.translation(0, 0, 5)));
-        this.planet_4 = Mat4.inverse(planet4.times(Mat4.translation(0, 0, 5)));
-        this.moon = Mat4.inverse(moon.times(Mat4.translation(0, 0, 5)));
+        this.farther = this.initial_camera_location.times(Mat4.translation(0, 0, 5));
+        this.closer = this.initial_camera_location.times(Mat4.translation(0, 0, -5));
+        // // this.planet_2 = Mat4.inverse(planet2.times(Mat4.translation(0, 0, 5)));
+        // // this.planet_3 = Mat4.inverse(planet3.times(Mat4.translation(0, 0, 5)));
+        // // this.planet_4 = Mat4.inverse(planet4.times(Mat4.translation(0, 0, 5)));
+        // // this.moon = Mat4.inverse(moon.times(Mat4.translation(0, 0, 5)));
         if (this.attached !== undefined) {
-            //program_state.set_camera(desired);
-            program_state.camera_inverse = this.attached().map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1));
-        }
-        else {
-            program_state.camera_inverse = (this.initial_camera_location);
+            let desired = this.attached();
+            program_state.camera_inverse = desired.map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1));
+            //     // this.attached() = null;
         }
     }
 }
@@ -374,6 +377,9 @@ class Ring_Shader extends Shader {
         context.uniformMatrix4fv(gpu_addresses.model_transform, false, Matrix.flatten_2D_to_1D(model_transform.transposed()));
         context.uniformMatrix4fv(gpu_addresses.projection_camera_model_transform, false,
             Matrix.flatten_2D_to_1D(PCM.transposed()));
+
+        // Set uniform parameters
+        context.uniform4fv(gpu_addresses.shape_color, material.color);
     }
 
     shared_glsl_code() {
@@ -381,7 +387,7 @@ class Ring_Shader extends Shader {
         return `
         precision mediump float;
         varying vec4 point_position;
-        varying vec4 center;      
+        varying vec4 center;
         `;
     }
 
@@ -394,9 +400,9 @@ class Ring_Shader extends Shader {
         uniform mat4 projection_camera_model_transform;
         
         void main(){
-            center = model_transform * vec4(0.0, 0.0, 0.0, 1.0);
-            point_position = model_transform * vec4(position, 1.0);
-            gl_Position = projection_camera_model_transform * vec4(position, 1.0);
+          gl_Position = projection_camera_model_transform * vec4( position, 1.0 );
+          center = model_transform * vec4( 0, 0, 0, 1.0 );
+          point_position = model_transform * vec4( position, 1.0 );
         }`;
     }
 
@@ -404,8 +410,11 @@ class Ring_Shader extends Shader {
         // ********* FRAGMENT SHADER *********
         // TODO:  Complete the main function of the fragment shader (Extra Credit Part II).
         return this.shared_glsl_code() + `
+        uniform vec4 shape_color;
         void main(){
-            gl_FragColor = vec4(0.69, 0.502, 0.251, 1) * sin( 15.0 * distance(point_position.xyz, center.xyz));
+          float factor = sin(15.0 * distance(point_position.xyz, center.xyz));
+          vec4 mixed_color =  vec4(shape_color.xyz, factor);
+          gl_FragColor = mixed_color;
         }`;
     }
 }
