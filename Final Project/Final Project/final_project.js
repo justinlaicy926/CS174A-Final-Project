@@ -1,7 +1,7 @@
 import {defs, tiny} from './examples/common.js';
 
 const {
-    Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene,
+    Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene, Texture
 } = tiny;
 
 export class Final_project extends Scene {
@@ -15,15 +15,9 @@ export class Final_project extends Scene {
             torus2: new defs.Torus(3, 15),
             sphere: new defs.Subdivision_Sphere(4),
             circle: new defs.Regular_2D_Polygon(1, 15),
-            // TODO:  Fill in as many additional shape instances as needed in this key/value table.
-            //        (Requirement 1)
-            sun: new defs.Subdivision_Sphere(4),
-            planet1: new  (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(2),
-            planet2: new defs.Subdivision_Sphere(3),
-            planet3: new defs.Subdivision_Sphere(4),
             ring: new defs.Torus(50, 50),
-            planet4: new defs.Subdivision_Sphere(4),
-            moon: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(1)
+            //11/26 CL
+            sky: new defs.Subdivision_Sphere(4)
         };
 
         // *** Materials
@@ -39,24 +33,23 @@ export class Final_project extends Scene {
             sun: new Material(new defs.Phong_Shader(),
                 //color defaults to red
                 {ambient: 1, diffusivity: 1, color: hex_color("#ff0000")}),
-            planet1: new Material(new defs.Phong_Shader(),
-                {ambient: 0, diffusivity: 1, color: hex_color("#808080"), specularity: 0}),
-            planet2_gouraud: new Material(new Gouraud_Shader(),
-                {ambient: 0, diffusivity: 0.1, color: hex_color("#80FFFF"), specularity: 1}),
-            planet2_phong: new Material(new defs.Phong_Shader(),
-                {ambient: 0, diffusivity: 0.1, color: hex_color("#80FFFF"), specularity: 1}),
-            planet3: new Material(new defs.Phong_Shader(),
-                {ambient: 0, diffusivity: 1, color: hex_color("#B08040"), specularity: 1}),
+
+
             //fix: confusing ring bs
             ring: new Material(new Ring_Shader(),
                 {ambient: 1, diffusivity: 0, color: color(1, 0, 0, 1), specularity: 0, smoothness: 0}),
-            planet4: new Material(new defs.Phong_Shader(),
-                {ambient: 0, color: hex_color("#add8e6"), specularity: 1}),
-            moon: new Material(new defs.Phong_Shader(),
-                {ambient: 0, diffusivity: .7, color: hex_color("#add8e6"), specularity: 1})
+
+
+            //11/26 CL material for the sky background
+            sky: new Material(new defs.Phong_Shader(),
+                {ambient: 1, diffusivity: 0, specularity: 0.2,
+                    texture: new Texture("assets/sky.png", "NEAREST")})
+
         }
 
         this.initial_camera_location = Mat4.look_at(vec3(0, 10, 20), vec3(0, 0, 0), vec3(0, 1, 0));
+        //11/26 CL FIX: sky transform
+        this.sky_transform = Mat4.identity().times(Mat4.scale(100, 100, 100)).times(Mat4.translation(0, 0, 20));
     }
 
     make_control_panel(program_state) {
@@ -98,10 +91,6 @@ export class Final_project extends Scene {
         let G =  (0.5 - 0.5*Math.sin(Math.PI * ms / 5 + Math.PI/2));
         let B =  (0.5 - 0.5*Math.sin(Math.PI * ms / 5 + Math.PI/2));
 
-
-
-
-
         // TODO: Lighting (Requirement 2)
         //light source at the center of the sun
         program_state.lights = [new Light(vec4(0,0,0,1), color(R, G, B, 1), 10**sun_radius)];
@@ -115,62 +104,7 @@ export class Final_project extends Scene {
         this.shapes.ring.draw(context, program_state, ring, this.materials.ring);
 
 
-        // // TODO: Create Planets (Requirement 1)
-        // // this.shapes.[XXX].draw([XXX]) // <--example
-        // //draw planet 1
-        // let planet1 = Mat4.identity();
-        // planet1 = planet1.times(Mat4.rotation(ms, 0, 1, 0))
-        //     .times(Mat4.translation(5, 0, 0));
-        // this.shapes.planet1.draw(context, program_state, planet1, this.materials.planet1);
-        //
-        // //planet 2
-        // let planet2 = Mat4.identity();
-        // planet2 = planet2.times(Mat4.rotation(ms*0.9, 0, 1, 0))
-        //     .times(Mat4.translation(8, 0, 0));
-        // //gourand odd, phong even
-        // if (Math.floor(ms%2) !== 0){
-        //     this.shapes.planet2.draw(context,program_state,planet2,this.materials.planet2_gouraud);
-        // }
-        // else{
-        //     this.shapes.planet2.draw(context,program_state,planet2,this.materials.planet2_phong);
-        // }
-        //
-        // //planet 3
-        // let planet3 = Mat4.identity();
-        // //planet3 self rotation
-        // planet3 = planet3.times(Mat4.rotation(ms*0.8, 0, 1, 0))
-        //     .times(Mat4.translation(11, 0, 0))
-        //     .times(Mat4.rotation(Math.sin(ms), 1, 0, 0));
-        // this.shapes.planet3.draw(context, program_state, planet3, this.materials.planet3);
-        //
-        // //planet3's ring
-        // //fix: ring not appearing
-        // let ring = planet3.times(Mat4.scale(3, 3, 0.1));
-        // this.shapes.ring.draw(context, program_state, ring, this.materials.ring);
-        //
-        // //planet4
-        // let planet4 = Mat4.identity();
-        // planet4  = planet4.times(Mat4.rotation(ms*0.7, 0, 1, 0))
-        //     .times(Mat4.translation(14, 0, 0));
-        // this.shapes.planet4.draw(context, program_state, planet4, this.materials.planet4);
-        //
-        // //planet4's moon
-        // let moon = planet4 ;
-        // moon = moon.times(Mat4.rotation(ms*0.7, 0, 1, 0))
-        //     .times(Mat4.translation(-1.5, 0, 0))
-        //     .times(Mat4.scale(0.3,0.3,0.3));
-        // this.shapes.moon.draw(context, program_state, moon, this.materials.moon);
-        //
-        // const light_position = vec4(0, 5, 5, 1);
-        // // The parameters of the Light are: position, color, size
-        // //program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
-        //
-        // // TODO:  Fill in matrix operations and drawing code to draw the solar system scene (Requirements 3 and 4)
-        // //const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
-        // const yellow = hex_color("#fac91a");
-        // //let model_transform = Mat4.identity();
 
-        //fix: view solar system does not work
         this.farther = this.initial_camera_location.times(Mat4.translation(0, 0, 5));
         this.closer = this.initial_camera_location.times(Mat4.translation(0, 0, -5));
         // // this.planet_2 = Mat4.inverse(planet2.times(Mat4.translation(0, 0, 5)));
@@ -182,6 +116,11 @@ export class Final_project extends Scene {
             program_state.camera_inverse = desired.map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1));
             //     // this.attached() = null;
         }
+
+        //11/26 CL Fix: draw sky, sky lighting not working
+        program_state.lights = [new Light(vec4(0, -1, 1, 0), color(1, 1, 1, 1), 10000)];
+        this.shapes.sky.draw(context, program_state, this.sky_transform, this.materials.sky);
+
     }
 }
 
