@@ -64,6 +64,48 @@ export class Final_project extends Scene {
         program_state.camera_inverse = this.initial_camera_location.map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1));
     }
 
+    //calculates the dx, dy value to adujst the first-person camera based on mouse inputs
+    //the user needs to register a mouse click before being able to move the camera with the mouse
+    FPSCamera(context, program_state) {
+        let X = 0;
+        let Y = 0;
+        let mouse_move = false;
+
+        //listen for mouse click to begin adjusting the camera
+        document.addEventListener('mousedown', (event) => {
+            mouse_move = true;
+        });
+
+        // Add event listeners for mouse movements
+        document.addEventListener('mousedown', (event) => {
+            X = event.clientX;
+            Y = event.clientY;
+        });
+
+        document.addEventListener('mousemove', (event) => {
+            // Calculate the change in mouse position
+            if (mouse_move){
+                const deltaX = event.clientX - X;
+                const deltaY = event.clientY - Y;
+
+                // Update the camera orientation based on mouse movement
+                const sensitivity = 0.1; // Adjust sensitivity as needed
+                const rotateX = Mat4.rotation(-deltaY * sensitivity, 1, 0, 0);
+                const rotateY = Mat4.rotation(-deltaX * sensitivity, 0, 1, 0);
+
+                // Combine rotations to update the camera orientation
+                this.initial_camera_location = rotateX.times(rotateY).times(this.initial_camera_location);
+
+                // Update previous mouse position
+                X = event.clientX;
+                Y = event.clientY;
+            }
+
+
+        });
+
+    }
+
     display(context, program_state) {
         // display():  Called once per frame of animation.
         // Setup -- This part sets up the scene's overall camera matrix, projection matrix, and lights:
@@ -103,6 +145,8 @@ export class Final_project extends Scene {
         let ring = center.times(Mat4.scale(3, 3, 0.1));
         this.shapes.ring.draw(context, program_state, ring, this.materials.ring);
 
+        //11/27 CL
+        this.FPSCamera();
 
 
         this.farther = this.initial_camera_location.times(Mat4.translation(0, 0, 5));
