@@ -4,6 +4,8 @@ const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene, Texture
 } = tiny;
 
+const {Cube, Textured_Phong} = defs
+
 export class Final_project extends Scene {
     constructor() {
         // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
@@ -17,7 +19,8 @@ export class Final_project extends Scene {
             circle: new defs.Regular_2D_Polygon(1, 15),
             ring: new defs.Torus(50, 50),
             //11/26 CL
-            sky: new defs.Subdivision_Sphere(4)
+            sky: new defs.Subdivision_Sphere(4),
+            boxbox: new Cube()
         };
 
         // *** Materials
@@ -42,14 +45,20 @@ export class Final_project extends Scene {
 
             //11/26 CL material for the sky background
             sky: new Material(new defs.Phong_Shader(),
-                {ambient: 1, diffusivity: 0, specularity: 0.2,
-                    texture: new Texture("assets/sky.png", "NEAREST")})
+                {ambient: 1,
+                    texture: new Texture("assets/stars.png", "NEAREST")}),
+
+            texture1: new Material(new Textured_Phong(), {
+                color: hex_color("#000000"),
+                ambient: 1,
+                texture: new Texture("assets/sky.png", "NEAREST")
+            })
 
         }
 
         this.initial_camera_location = Mat4.look_at(vec3(0, 10, 20), vec3(0, 0, 0), vec3(0, 1, 0));
         //11/26 CL FIX: sky transform
-        this.sky_transform = Mat4.identity().times(Mat4.scale(100, 100, 100)).times(Mat4.translation(0, 0, 20));
+        this.sky_transform = Mat4.identity().times(Mat4.translation(0, 0, -20)).times(Mat4.scale(50, 50, 50));
     }
 
     make_control_panel(program_state) {
@@ -85,16 +94,21 @@ export class Final_project extends Scene {
         document.addEventListener('mousemove', (event) => {
             // Calculate the change in mouse position
             if (mouse_move){
-                const deltaX = event.clientX - X;
-                const deltaY = event.clientY - Y;
+                let deltaX = event.clientX - X;
+                let deltaY = event.clientY - Y;
 
                 // Update the camera orientation based on mouse movement
                 const sensitivity = 0.1; // Adjust sensitivity as needed
-                const rotateX = Mat4.rotation(-deltaY * sensitivity, 1, 0, 0);
-                const rotateY = Mat4.rotation(-deltaX * sensitivity, 0, 1, 0);
+                let moveX = Mat4.translation(deltaX * sensitivity, 0, 0);
+                let moveY = Mat4.translation(0, deltaY * sensitivity, 0);
+                let rotateX = Mat4.rotation(deltaY * sensitivity, 1, 0, 0);
+                let rotateY = Mat4.rotation(deltaX * sensitivity, 0, 1, 0);
 
                 // Combine rotations to update the camera orientation
-                this.initial_camera_location = rotateX.times(rotateY).times(this.initial_camera_location);
+                this.initial_camera_location = this.initial_camera_location.times(moveX)
+                    .times(rotateX)
+                    .times(moveY)
+                    .times(rotateY);
 
                 // Update previous mouse position
                 X = event.clientX;
@@ -122,20 +136,8 @@ export class Final_project extends Scene {
         const ms = program_state.animation_time/1000;
         let model_transform = Mat4.identity();
 
-        //sun radius shrinks from 1 to 3 to 1 over 10 seconds
-        //correct numbers
-        var sun_radius = 2-Math.sin(Math.PI*ms/5+Math.PI/2);
-
-        //sun color changes from red to white to red over 10 seconds
-        //let color = hex_color("#ffffff");
-        //fix: cannot convert rgb color
-        const R =  1;
-        let G =  (0.5 - 0.5*Math.sin(Math.PI * ms / 5 + Math.PI/2));
-        let B =  (0.5 - 0.5*Math.sin(Math.PI * ms / 5 + Math.PI/2));
-
-        // TODO: Lighting (Requirement 2)
-        //light source at the center of the sun
-        program_state.lights = [new Light(vec4(0,0,0,1), color(R, G, B, 1), 10**sun_radius)];
+        const light_position = vec4(10, 10, 10, 1);
+        program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
 
         // this.shapes.
         let center = model_transform.times(Mat4.scale(0.5, 0.5, 0.1));
@@ -149,21 +151,21 @@ export class Final_project extends Scene {
         this.FPSCamera();
 
 
-        this.farther = this.initial_camera_location.times(Mat4.translation(0, 0, 5));
-        this.closer = this.initial_camera_location.times(Mat4.translation(0, 0, -5));
-        // // this.planet_2 = Mat4.inverse(planet2.times(Mat4.translation(0, 0, 5)));
-        // // this.planet_3 = Mat4.inverse(planet3.times(Mat4.translation(0, 0, 5)));
-        // // this.planet_4 = Mat4.inverse(planet4.times(Mat4.translation(0, 0, 5)));
-        // // this.moon = Mat4.inverse(moon.times(Mat4.translation(0, 0, 5)));
-        if (this.attached !== undefined) {
-            let desired = this.attached();
-            program_state.camera_inverse = desired.map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1));
-            //     // this.attached() = null;
-        }
+        // this.farther = this.initial_camera_location.times(Mat4.translation(0, 0, 5));
+        // this.closer = this.initial_camera_location.times(Mat4.translation(0, 0, -5));
+        // // // this.planet_2 = Mat4.inverse(planet2.times(Mat4.translation(0, 0, 5)));
+        // // // this.planet_3 = Mat4.inverse(planet3.times(Mat4.translation(0, 0, 5)));
+        // // // this.planet_4 = Mat4.inverse(planet4.times(Mat4.translation(0, 0, 5)));
+        // // // this.moon = Mat4.inverse(moon.times(Mat4.translation(0, 0, 5)));
+        // if (this.attached !== undefined) {
+        //     let desired = this.attached();
+        //     program_state.camera_inverse = desired.map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1));
+        //     //     // this.attached() = null;
+        // }
 
-        //11/26 CL Fix: draw sky, sky lighting not working
-        program_state.lights = [new Light(vec4(0, -1, 1, 0), color(1, 1, 1, 1), 10000)];
-        this.shapes.sky.draw(context, program_state, this.sky_transform, this.materials.sky);
+        // //11/26 CL Fix: draw sky, sky lighting not working
+        // program_state.lights = [new Light(vec4(0, -1, 1, 0), color(1, 1, 1, 1), 10000)];
+        this.shapes.boxbox.draw(context, program_state, this.sky_transform, this.materials.texture1);
 
     }
 }
