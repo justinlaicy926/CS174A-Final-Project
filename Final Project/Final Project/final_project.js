@@ -46,7 +46,7 @@ export class Final_project extends Scene {
             //11/26 CL material for the sky background
             sky: new Material(new defs.Phong_Shader(),
                 {ambient: 1,
-                    texture: new Texture("assets/stars.png", "NEAREST")}),
+                    texture: new Texture("assets/sky.png", "NEAREST")}),
 
             texture1: new Material(new Textured_Phong(), {
                 color: hex_color("#000000"),
