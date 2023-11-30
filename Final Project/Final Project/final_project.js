@@ -20,7 +20,7 @@ export class Final_project extends Scene {
             ring: new defs.Torus(50, 50),
             //11/26 CL
             sky: new defs.Subdivision_Sphere(4),
-            boxbox: new Cube()
+            boxbox: new defs.Subdivision_Sphere(4)
         };
 
         // *** Materials
@@ -46,7 +46,7 @@ export class Final_project extends Scene {
             //11/26 CL material for the sky background
             sky: new Material(new defs.Phong_Shader(),
                 {ambient: 1,
-                    texture: new Texture("assets/sky.png", "NEAREST")}),
+                    texture: new Texture("assets/sky.avif", "NEAREST")}),
 
             texture1: new Material(new Textured_Phong(), {
                 color: hex_color("#000000"),
@@ -58,7 +58,7 @@ export class Final_project extends Scene {
 
         this.initial_camera_location = Mat4.look_at(vec3(0, 10, 20), vec3(0, 0, 0), vec3(0, 1, 0));
         //11/26 CL FIX: sky transform
-        this.sky_transform = Mat4.identity().times(Mat4.translation(0, 0, -20)).times(Mat4.scale(50, 50, 50));
+        this.sky_transform = Mat4.identity().times(Mat4.translation(0, 0, -50)).times(Mat4.scale(100, 100, 100));
     }
 
     make_control_panel(program_state) {
