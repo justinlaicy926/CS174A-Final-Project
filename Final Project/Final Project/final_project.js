@@ -6,6 +6,25 @@ const {
 
 const {Cube, Textured_Phong} = defs
 
+// define the shape of the gun
+// a gun = a cylinder (barrel) stuck on top of a stretched cube (grip),
+// with metallic texture applied on the surface
+const gun = defs.gun =
+    class gun extends Shape {constructor() {
+        super("position", "normal", "texture_coord");
+            //cylinder points down the z-direction
+            const barrel_length = Mat4.scale(1, 1, 2);
+            const grip_length = Mat4.scale(0.5, 1.5, 0.5);
+            //make the grip tilt towards the screen
+            const grip_angle = Mat4.rotation(0.1, 0, 0, 1);
+
+            defs.Capped_Cylinder.insert_transformed_copy_into(this, [10, 10], barrel_length);
+            //fix: args for cube constructor
+            // move the cube down
+            defs.Cube.insert_transformed_copy_into(this, [] , grip_length.times(Mat4.translation(0, -1, 0)));
+        }
+    }
+
 export class Final_project extends Scene {
     constructor() {
         // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
@@ -20,7 +39,9 @@ export class Final_project extends Scene {
             ring: new defs.Torus(50, 50),
             //11/26 CL
             sky: new defs.Subdivision_Sphere(4),
-            boxbox: new defs.Subdivision_Sphere(4)
+            boxbox: new defs.Subdivision_Sphere(4),
+
+            gun: new defs.gun
         };
 
         // *** Materials
@@ -38,7 +59,6 @@ export class Final_project extends Scene {
                 {ambient: 1, diffusivity: 1, color: hex_color("#ff0000")}),
 
 
-            //fix: confusing ring bs
             ring: new Material(new Ring_Shader(),
                 {ambient: 1, diffusivity: 0, color: color(1, 0, 0, 1), specularity: 0, smoothness: 0}),
             
@@ -46,6 +66,13 @@ export class Final_project extends Scene {
                 color: hex_color("#000000"),
                 ambient: 1,
                 texture: new Texture("assets/sky.png", "NEAREST")
+            }),
+
+            //fix: need correct format
+            gun : new Material(new Textured_Phong(), {
+                color: hex_color("#000000"),
+                ambient: 1,
+                texture: new Texture("assets/metallic.jpg", "NEAREST")
             })
 
         }
@@ -140,6 +167,9 @@ export class Final_project extends Scene {
 
         let ring = center.times(Mat4.scale(3, 3, 0.1));
         this.shapes.ring.draw(context, program_state, ring, this.materials.ring);
+
+        //fix: draw gun
+        //this.shapes.gun.draw(context, program_state, gun, this.materials.gun_surface);
 
         //11/27 CL
         this.FPSCamera();
