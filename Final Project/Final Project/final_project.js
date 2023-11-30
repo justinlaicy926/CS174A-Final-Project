@@ -41,14 +41,8 @@ export class Final_project extends Scene {
             //fix: confusing ring bs
             ring: new Material(new Ring_Shader(),
                 {ambient: 1, diffusivity: 0, color: color(1, 0, 0, 1), specularity: 0, smoothness: 0}),
-
-
-            //11/26 CL material for the sky background
-            sky: new Material(new defs.Phong_Shader(),
-                {ambient: 1,
-                    texture: new Texture("assets/sky.avif", "NEAREST")}),
-
-            texture1: new Material(new Textured_Phong(), {
+            
+            sky: new Material(new Textured_Phong(), {
                 color: hex_color("#000000"),
                 ambient: 1,
                 texture: new Texture("assets/sky.png", "NEAREST")
@@ -165,7 +159,7 @@ export class Final_project extends Scene {
 
         // //11/26 CL Fix: draw sky, sky lighting not working
         // program_state.lights = [new Light(vec4(0, -1, 1, 0), color(1, 1, 1, 1), 10000)];
-        this.shapes.boxbox.draw(context, program_state, this.sky_transform, this.materials.texture1);
+        this.shapes.boxbox.draw(context, program_state, this.sky_transform, this.materials.sky);
 
     }
 }
