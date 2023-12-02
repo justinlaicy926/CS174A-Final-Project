@@ -39,9 +39,8 @@ export class Final_project extends Scene {
             ring: new defs.Torus(50, 50),
             //11/26 CL
             sky: new defs.Subdivision_Sphere(4),
-
-            boxbox: new Cube(),
-            gun: new defs.gun
+            horizon: new Cube(),
+            gun_s: new defs.gun
         };
 
         // *** Materials
@@ -71,10 +70,10 @@ export class Final_project extends Scene {
             horizon: new Material(new Textured_Phong(), {
                 color: hex_color("#000000"),
                 ambient: 1,
-                texture: new Texture("assets/grass.png", "NEAREST")
+                texture: new Texture("assets/grass.png", "NEAREST")}),
 
             //fix: need correct format
-            gun : new Material(new Textured_Phong(), {
+            gun_m: new Material(new Textured_Phong(), {
                 color: hex_color("#000000"),
                 ambient: 1,
                 texture: new Texture("assets/metallic.jpg", "NEAREST")
@@ -102,7 +101,7 @@ export class Final_project extends Scene {
 
     //calculates the dx, dy value to adujst the first-person camera based on mouse inputs
     //the user needs to register a mouse click before being able to move the camera with the mouse
-    FPSCamera(context, program_state) {
+    FPSCamera(context, program_state){
         let X = 0;
         let Y = 0;
         let mouse_move = false;
@@ -177,10 +176,11 @@ export class Final_project extends Scene {
         this.shapes.sky.draw(context, program_state, this.sky_transform, this.materials.sky);
 
         let horizon = model_transform.times(Mat4.scale(150, 0.5, 150)).times(Mat4.translation(0, -10, 0));
-        this.shapes.boxbox.draw(context, program_state, horizon, this.materials.horizon)
+        this.shapes.horizon.draw(context, program_state, horizon, this.materials.horizon)
 
         //fix: draw gun
-        this.shapes.gun.draw(context, program_state, gun, this.materials.gun_surface);
+        // Gun transformation = 
+        // this.shapes.gun_s.draw(context, program_state, gun, this.materials.gun_m);
 
 
         //11/27 CL
