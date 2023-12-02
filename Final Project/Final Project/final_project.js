@@ -20,7 +20,7 @@ export class Final_project extends Scene {
             ring: new defs.Torus(50, 50),
             //11/26 CL
             sky: new defs.Subdivision_Sphere(4),
-            boxbox: new defs.Subdivision_Sphere(4)
+            boxbox: new Cube()
         };
 
         // *** Materials
@@ -41,18 +41,24 @@ export class Final_project extends Scene {
             //fix: confusing ring bs
             ring: new Material(new Ring_Shader(),
                 {ambient: 1, diffusivity: 0, color: color(1, 0, 0, 1), specularity: 0, smoothness: 0}),
-            
+
             sky: new Material(new Textured_Phong(), {
                 color: hex_color("#000000"),
                 ambient: 1,
                 texture: new Texture("assets/sky.png", "NEAREST")
+            }),
+
+            horizon: new Material(new Textured_Phong(), {
+                color: hex_color("#000000"),
+                ambient: 1,
+                texture: new Texture("assets/grass.png", "NEAREST")
             })
 
         }
 
-        this.initial_camera_location = Mat4.look_at(vec3(0, 10, 20), vec3(0, 0, 0), vec3(0, 1, 0));
+        this.initial_camera_location = Mat4.look_at(vec3(0, 0, 25), vec3(0, 0, 0), vec3(0, 1, 0));
         //11/26 CL FIX: sky transform
-        this.sky_transform = Mat4.identity().times(Mat4.translation(0, 0, -50)).times(Mat4.scale(100, 100, 100));
+        this.sky_transform = Mat4.identity().times(Mat4.translation(0, 0, 0)).times(Mat4.scale(100, 100, 100));
     }
 
     make_control_panel(program_state) {
@@ -141,6 +147,11 @@ export class Final_project extends Scene {
         let ring = center.times(Mat4.scale(3, 3, 0.1));
         this.shapes.ring.draw(context, program_state, ring, this.materials.ring);
 
+        this.shapes.sky.draw(context, program_state, this.sky_transform, this.materials.sky);
+
+        let horizon = model_transform.times(Mat4.scale(150, 0.5, 150)).times(Mat4.translation(0, -10, 0));
+        this.shapes.boxbox.draw(context, program_state, horizon, this.materials.horizon)
+
         //11/27 CL
         this.FPSCamera();
 
@@ -159,7 +170,7 @@ export class Final_project extends Scene {
 
         // //11/26 CL Fix: draw sky, sky lighting not working
         // program_state.lights = [new Light(vec4(0, -1, 1, 0), color(1, 1, 1, 1), 10000)];
-        this.shapes.boxbox.draw(context, program_state, this.sky_transform, this.materials.sky);
+
 
     }
 }
