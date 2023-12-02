@@ -13,7 +13,7 @@ const gun = defs.gun =
     class gun extends Shape {constructor() {
         super("position", "normal", "texture_coord");
             //cylinder points down the z-direction
-            const barrel_length = Mat4.scale(1, 1, 2);
+            const barrel_length = Mat4.scale(0.6,0.6, 4);
             const grip_length = Mat4.scale(0.5, 1.5, 0.5);
             //make the grip tilt towards the screen
             const grip_angle = Mat4.rotation(0.1, 0, 0, 1);
@@ -21,7 +21,7 @@ const gun = defs.gun =
             defs.Capped_Cylinder.insert_transformed_copy_into(this, [10, 10], barrel_length);
             //fix: args for cube constructor
             // move the cube down
-            defs.Cube.insert_transformed_copy_into(this, [] , grip_length.times(Mat4.translation(0, -1, 0)));
+            defs.Cube.insert_transformed_copy_into(this, [] , grip_length.times(Mat4.translation(0, -1, 3)));
         }
     }
 
@@ -72,11 +72,10 @@ export class Final_project extends Scene {
                 ambient: 1,
                 texture: new Texture("assets/grass.png", "NEAREST")}),
 
-            //fix: need correct format
             gun_m: new Material(new Textured_Phong(), {
                 color: hex_color("#000000"),
                 ambient: 1,
-                texture: new Texture("assets/metallic.jpg", "NEAREST")
+                texture: new Texture("assets/metallic.png", "NEAREST")
 
             })
 
@@ -178,9 +177,9 @@ export class Final_project extends Scene {
         let horizon = model_transform.times(Mat4.scale(150, 0.5, 150)).times(Mat4.translation(0, -10, 0));
         this.shapes.horizon.draw(context, program_state, horizon, this.materials.horizon)
 
-        //fix: draw gun
-        // Gun transformation = 
-        // this.shapes.gun_s.draw(context, program_state, gun, this.materials.gun_m);
+        //TODO: gun should be moving with the camera movement
+        let gun_T = model_transform.times(Mat4.translation(0,0,5))
+        this.shapes.gun_s.draw(context, program_state, gun_T, this.materials.gun_m);
 
 
         //11/27 CL
