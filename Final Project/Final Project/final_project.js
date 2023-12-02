@@ -21,7 +21,7 @@ const gun = defs.gun =
             defs.Capped_Cylinder.insert_transformed_copy_into(this, [10, 10], barrel_length);
             //fix: args for cube constructor
             // move the cube down
-            defs.Cube.insert_transformed_copy_into(this, [] , grip_length.times(Mat4.translation(0, -1, 3)));
+            defs.Cube.insert_transformed_copy_into(this, [] , grip_length.times(Mat4.translation(0, -1, 2.8)));
         }
     }
 
