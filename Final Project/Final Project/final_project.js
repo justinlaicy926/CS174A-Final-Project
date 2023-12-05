@@ -252,13 +252,13 @@ export class Final_project extends Scene {
         // const light_position = vec4(10, 10, 10, 1);
         // program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
 
-        //TODO 靶子重新做，一个shape 加 texture就行 方便后期坐collision detection
+        //TODO 靶子重新做，一个shape 加 texture 方便后期坐collision detection
 
-        // let center = model_transform.times(Mat4.scale(0.5, 0.5, 0.1));
-        // this.shapes.sphere.draw(context, program_state, center, this.materials.sun.override({color: color(1, 0, 0, 1)}));
-        // center = center.times(Mat4.scale(2.0, 2.0, 10.0));
-        // let ring = center.times(Mat4.scale(3, 3, 0.1));
-        // this.shapes.ring.draw(context, program_state, ring, this.materials.ring);
+        let center = model_transform.times(Mat4.scale(0.5, 0.5, 0.1));
+        this.shapes.sphere.draw(context, program_state, center, this.materials.sun.override({color: color(1, 0, 0, 1)}));
+        center = center.times(Mat4.scale(2.0, 2.0, 10.0));
+        let ring = center.times(Mat4.scale(3, 3, 0.1));
+        this.shapes.ring.draw(context, program_state, ring, this.materials.ring);
 
         this.shapes.sky.draw(context, program_state, this.sky_transform, this.materials.sky);
 
