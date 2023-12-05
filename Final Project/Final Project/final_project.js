@@ -25,28 +25,6 @@ const gun = defs.gun =
         }
     }
 
-const Axes = defs.Axes =
-    class Axes extends Shape {
-        // An axis set with arrows, made out of a lot of various primitives.
-        constructor() {
-            super("position", "normal", "texture_coord");
-            let stack = [];
-            // Subdivision_Sphere.insert_transformed_copy_into(this, [3], Mat4.rotation(Math.PI / 2, 0, 1, 0).times(Mat4.scale(.25, .25, .25)));
-            this.drawOneAxis(Mat4.identity(), [[.7, 1], [.3, .7]]);
-            this.drawOneAxis(Mat4.rotation(-Math.PI / 2, 1, 0, 0).times(Mat4.scale(1, -1, 1)), [[.4, .6], [.3, .7]]);
-            this.drawOneAxis(Mat4.rotation(Math.PI / 2, 0, 1, 0).times(Mat4.scale(-1, 1, 1)), [[0, .3], [.3, .7]]);
-        }
-
-        drawOneAxis(transform, tex) {
-            // Use a different texture coordinate range for each of the three axes, so they show up differently.
-            Closed_Cone.insert_transformed_copy_into(this, [8, 16, tex], transform.times(Mat4.translation(0, 0, 5)).times(Mat4.scale(.2, .2, .2)));
-            // Cube.insert_transformed_copy_into(this, [], transform.times(Mat4.translation(.95, .95, .45)).times(Mat4.scale(.05, .05, .45)));
-            // Cube.insert_transformed_copy_into(this, [], transform.times(Mat4.translation(.95, 0, .5)).times(Mat4.scale(.05, .05, .4)));
-            // Cube.insert_transformed_copy_into(this, [], transform.times(Mat4.translation(0, .95, .5)).times(Mat4.scale(.05, .05, .4)));
-            Cylindrical_Tube.insert_transformed_copy_into(this, [12, 12, tex], transform.times(Mat4.translation(0, 0, 2.5)).times(Mat4.scale(.1, .1, 5)));
-        }
-    }
-
 export class Final_project extends Scene {
     constructor() {
         // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
@@ -227,8 +205,6 @@ export class Final_project extends Scene {
 
         const light_position = vec4(10, 10, 10, 1);
         program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
-
-        // this.shapes.axis.draw(context, program_state, Mat4.identity(), this.materials.texture);
 
         let t = program_state.animation_time;
         if (this.animation_queue.length > 0) {
