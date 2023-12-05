@@ -1,4 +1,4 @@
-import {defs, tiny} from './examples/common.js';
+import {defs, tiny} from './common.js';
 
 const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Shader, Matrix, Mat4, Light, Shape, Material, Scene, Texture
@@ -89,9 +89,9 @@ export class Final_project extends Scene {
 
     make_control_panel(program_state) {
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
-        this.key_triggered_button("Move Farther", ["o"], () => this.attached = () => this.farther);
-        this.new_line();
-        this.key_triggered_button("Move Closer", ["Control", "1"], () => this.attached = () => this.closer);
+        // this.key_triggered_button("Move Farther", ["o"], () => this.attached = () => this.farther);
+        // this.new_line();
+        // this.key_triggered_button("Move Closer", ["Control", "1"], () => this.attached = () => this.closer);
     }
 
     my_mouse_down(e, pos, context, program_state) {
@@ -125,6 +125,11 @@ export class Final_project extends Scene {
         this.initial_camera_location = this.initial_camera_location.times(Mat4.translation(0, 0, 5));
         program_state.camera_inverse = this.initial_camera_location.map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1));
     }
+    // move_farther(program_state) {
+    //     move
+    //     this.initial_camera_location = this.initial_camera_location.times(Mat4.translation(0, 0, 5));
+    //     program_state.camera_inverse = this.initial_camera_location.map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1));
+    // }
 
     //calculates the dx, dy value to adujst the first-person camera based on mouse inputs
     //the user needs to register a mouse click before being able to move the camera with the mouse
@@ -247,13 +252,13 @@ export class Final_project extends Scene {
         // const light_position = vec4(10, 10, 10, 1);
         // program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
 
-        //
-        let center = model_transform.times(Mat4.scale(0.5, 0.5, 0.1));
-        this.shapes.sphere.draw(context, program_state, center, this.materials.sun.override({color: color(1, 0, 0, 1)}));
-        center = center.times(Mat4.scale(2.0, 2.0, 10.0));
+        //TODO 靶子重新做，一个shape 加 texture就行 方便后期坐collision detection
 
-        let ring = center.times(Mat4.scale(3, 3, 0.1));
-        this.shapes.ring.draw(context, program_state, ring, this.materials.ring);
+        // let center = model_transform.times(Mat4.scale(0.5, 0.5, 0.1));
+        // this.shapes.sphere.draw(context, program_state, center, this.materials.sun.override({color: color(1, 0, 0, 1)}));
+        // center = center.times(Mat4.scale(2.0, 2.0, 10.0));
+        // let ring = center.times(Mat4.scale(3, 3, 0.1));
+        // this.shapes.ring.draw(context, program_state, ring, this.materials.ring);
 
         this.shapes.sky.draw(context, program_state, this.sky_transform, this.materials.sky);
 
@@ -263,6 +268,9 @@ export class Final_project extends Scene {
         //TODO: gun should be moving with the camera movement
         let gun_T = model_transform.times(Mat4.translation(0,0,5))
         this.shapes.gun_s.draw(context, program_state, gun_T, this.materials.gun_m);
+
+        // TODO bullet would be shooting from the gun transformation (with some modification)
+
 
 
         // //11/27 CL
