@@ -1,4 +1,4 @@
-import {defs, tiny} from './examples/common.js';
+import {defs, tiny} from './common.js';
 import {Axes_Viewer, Axes_Viewer_Test_Scene} from "./examples/axes-viewer.js"
 import {Collision_Demo, Inertia_Demo} from "./examples/collisions-demo.js"
 import {Many_Lights_Demo} from "./examples/many-lights-demo.js"
