@@ -25,6 +25,28 @@ const gun = defs.gun =
         }
     }
 
+const Axes = defs.Axes =
+    class Axes extends Shape {
+        // An axis set with arrows, made out of a lot of various primitives.
+        constructor() {
+            super("position", "normal", "texture_coord");
+            let stack = [];
+            // Subdivision_Sphere.insert_transformed_copy_into(this, [3], Mat4.rotation(Math.PI / 2, 0, 1, 0).times(Mat4.scale(.25, .25, .25)));
+            this.drawOneAxis(Mat4.identity(), [[.7, 1], [.3, .7]]);
+            this.drawOneAxis(Mat4.rotation(-Math.PI / 2, 1, 0, 0).times(Mat4.scale(1, -1, 1)), [[.4, .6], [.3, .7]]);
+            this.drawOneAxis(Mat4.rotation(Math.PI / 2, 0, 1, 0).times(Mat4.scale(-1, 1, 1)), [[0, .3], [.3, .7]]);
+        }
+
+        drawOneAxis(transform, tex) {
+            // Use a different texture coordinate range for each of the three axes, so they show up differently.
+            Closed_Cone.insert_transformed_copy_into(this, [8, 16, tex], transform.times(Mat4.translation(0, 0, 5)).times(Mat4.scale(.2, .2, .2)));
+            // Cube.insert_transformed_copy_into(this, [], transform.times(Mat4.translation(.95, .95, .45)).times(Mat4.scale(.05, .05, .45)));
+            // Cube.insert_transformed_copy_into(this, [], transform.times(Mat4.translation(.95, 0, .5)).times(Mat4.scale(.05, .05, .4)));
+            // Cube.insert_transformed_copy_into(this, [], transform.times(Mat4.translation(0, .95, .5)).times(Mat4.scale(.05, .05, .4)));
+            Cylindrical_Tube.insert_transformed_copy_into(this, [12, 12, tex], transform.times(Mat4.translation(0, 0, 2.5)).times(Mat4.scale(.1, .1, 5)));
+        }
+    }
+
 export class Final_project extends Scene {
     constructor() {
         // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
@@ -84,6 +106,7 @@ export class Final_project extends Scene {
         this.initial_camera_location = Mat4.look_at(vec3(0, 0, 25), vec3(0, 0, 0), vec3(0, 1, 0));
         //11/26 CL FIX: sky transform
         this.sky_transform = Mat4.identity().times(Mat4.translation(0, 0, 0)).times(Mat4.scale(100, 100, 100));
+        this.animation_queue = [];
     }
 
     make_control_panel(program_state) {
@@ -91,6 +114,33 @@ export class Final_project extends Scene {
         this.key_triggered_button("Move Farther", ["o"], () => this.attached = () => this.farther);
         this.new_line();
         this.key_triggered_button("Move Closer", ["Control", "1"], () => this.attached = () => this.closer);
+    }
+
+    my_mouse_down(e, pos, context, program_state) {
+        let pos_ndc_near = vec4(pos[0], pos[1], -1.0, 1.0);
+        let pos_ndc_far  = vec4(pos[0], pos[1],  1.0, 1.0);
+        let center_ndc_near = vec4(0.0, 0.0, -1.0, 1.0);
+        let P = program_state.projection_transform;
+        let V = program_state.camera_inverse;
+        let pos_world_near = Mat4.inverse(P.times(V)).times(pos_ndc_near);
+        let pos_world_far  = Mat4.inverse(P.times(V)).times(pos_ndc_far);
+        let center_world_near  = Mat4.inverse(P.times(V)).times(center_ndc_near);
+        pos_world_near.scale_by(1 / pos_world_near[3]);
+        pos_world_far.scale_by(1 / pos_world_far[3]);
+        center_world_near.scale_by(1 / center_world_near[3]);
+        // console.log(pos_world_near);
+        // console.log(pos_world_far);
+        //
+        // Do whatever you want
+        let animation_bullet = {
+            from: center_world_near,
+            to: pos_world_far,
+            start_time: program_state.animation_time,
+            end_time: program_state.animation_time + 5000,
+            more_info: "add gravity"
+        }
+
+        this.animation_queue.push(animation_bullet)
     }
 
     move_farther(program_state) {
@@ -151,18 +201,75 @@ export class Final_project extends Scene {
         if (!context.scratchpad.controls) {
             this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
             // Define the global camera and projection matrices, which are stored in program_state.
+            let LookAt = Mat4.look_at(vec3(0, 0, 10), vec3(0, 0, 0), vec3(0, 1, 0));
             program_state.set_camera(this.initial_camera_location);
-        }
 
+            let canvas = context.canvas;
+            const mouse_position = (e, rect = canvas.getBoundingClientRect()) =>
+                vec((e.clientX - (rect.left + rect.right) / 2) / ((rect.right - rect.left) / 2),
+                    (e.clientY - (rect.bottom + rect.top) / 2) / ((rect.top - rect.bottom) / 2));
+
+            canvas.addEventListener("mousedown", e => {
+                e.preventDefault();
+                const rect = canvas.getBoundingClientRect()
+                console.log("e.clientX: " + e.clientX);
+                console.log("e.clientX - rect.left: " + (e.clientX - rect.left));
+                console.log("e.clientY: " + e.clientY);
+                console.log("e.clientY - rect.top: " + (e.clientY - rect.top));
+                console.log("mouse_position(e): " + mouse_position(e));
+                this.my_mouse_down(e, mouse_position(e), context, program_state);
+            });
+        }
         program_state.projection_transform = Mat4.perspective(
             Math.PI / 4, context.width / context.height, .1, 1000);
+
+        // program_state.projection_transform = orthographic_proj;
+
+        const light_position = vec4(10, 10, 10, 1);
+        program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
+
+        // this.shapes.axis.draw(context, program_state, Mat4.identity(), this.materials.texture);
+
+        let t = program_state.animation_time;
+        if (this.animation_queue.length > 0) {
+            for (let i = 0; i < this.animation_queue.length; i++) {
+                let animation_bullet = this.animation_queue[i];
+
+                let from = animation_bullet.from;
+                let to = animation_bullet.to;
+                let start_time = animation_bullet.start_time;
+                let end_time = animation_bullet.end_time;
+
+                if (t <= end_time && t >= start_time) {
+                    let animation_process = (t - start_time) / (end_time - start_time);
+                    let position = to.times(animation_process).plus(from.times(1 - animation_process));
+
+                    if (animation_bullet.more_info === "add gravity") {
+                        position[1] -= 0.5 * 9.8 * ((t - start_time) / 1000) ** 2;
+                    }
+
+                    let model_trans = Mat4.translation(position[0], position[1], position[2])
+                        .times(Mat4.rotation(animation_process * 50, .3, .6, .2))
+                    this.shapes.sphere.draw(context, program_state, model_trans, this.materials.sun.override({color: color(1, 0, 0, 1)}));
+                }
+            }
+        }
+        // remove finished animation
+        while (this.animation_queue.length > 0) {
+            if (t > this.animation_queue[0].end_time) {
+                this.animation_queue.shift();
+            }
+            else {
+                break;
+            }
+        }
 
         //Sun Operations
         const ms = program_state.animation_time/1000;
         let model_transform = Mat4.identity();
 
-        const light_position = vec4(10, 10, 10, 1);
-        program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
+        // const light_position = vec4(10, 10, 10, 1);
+        // program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
 
         //
         let center = model_transform.times(Mat4.scale(0.5, 0.5, 0.1));
@@ -182,8 +289,8 @@ export class Final_project extends Scene {
         this.shapes.gun_s.draw(context, program_state, gun_T, this.materials.gun_m);
 
 
-        //11/27 CL
-        this.FPSCamera();
+        // //11/27 CL
+        // this.FPSCamera();
 
 
         // this.farther = this.initial_camera_location.times(Mat4.translation(0, 0, 5));
