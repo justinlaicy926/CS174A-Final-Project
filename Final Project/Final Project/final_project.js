@@ -80,7 +80,7 @@ export class Final_project extends Scene {
             })
 
         }
-
+        this.center = Mat4.identity();
         this.initial_camera_location = Mat4.look_at(vec3(0, 0, 25), vec3(0, 0, 0), vec3(0, 1, 0));
         //11/26 CL FIX: sky transform
         this.sky_transform = Mat4.identity().times(Mat4.translation(0, 0, 0)).times(Mat4.scale(100, 100, 100));
@@ -88,7 +88,7 @@ export class Final_project extends Scene {
 
     make_control_panel(program_state) {
         // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
-        this.key_triggered_button("Move Farther", ["o"], () => this.attached = () => this.farther);
+        this.key_triggered_button("Move Farther", ["o"], () => this.attached = () => this.move_farther());
         this.new_line();
         this.key_triggered_button("Move Closer", ["Control", "1"], () => this.attached = () => this.closer);
     }
@@ -157,14 +157,11 @@ export class Final_project extends Scene {
         program_state.projection_transform = Mat4.perspective(
             Math.PI / 4, context.width / context.height, .1, 1000);
 
-        //Sun Operations
-        const ms = program_state.animation_time/1000;
         let model_transform = Mat4.identity();
-
         const light_position = vec4(10, 10, 10, 1);
         program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
 
-        //
+        // Target
         let center = model_transform.times(Mat4.scale(0.5, 0.5, 0.1));
         this.shapes.sphere.draw(context, program_state, center, this.materials.sun.override({color: color(1, 0, 0, 1)}));
         center = center.times(Mat4.scale(2.0, 2.0, 10.0));
@@ -172,6 +169,8 @@ export class Final_project extends Scene {
         let ring = center.times(Mat4.scale(3, 3, 0.1));
         this.shapes.ring.draw(context, program_state, ring, this.materials.ring);
 
+
+        // Context
         this.shapes.sky.draw(context, program_state, this.sky_transform, this.materials.sky);
 
         let horizon = model_transform.times(Mat4.scale(150, 0.5, 150)).times(Mat4.translation(0, -10, 0));
