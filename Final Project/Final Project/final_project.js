@@ -25,6 +25,7 @@ const gun = defs.gun =
         }
     }
 
+
 export class Final_project extends Scene {
     constructor() {
         // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
@@ -120,16 +121,6 @@ export class Final_project extends Scene {
 
         this.animation_queue.push(animation_bullet)
     }
-
-    move_farther(program_state) {
-        this.initial_camera_location = this.initial_camera_location.times(Mat4.translation(0, 0, 5));
-        program_state.camera_inverse = this.initial_camera_location.map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1));
-    }
-    // move_farther(program_state) {
-    //     move
-    //     this.initial_camera_location = this.initial_camera_location.times(Mat4.translation(0, 0, 5));
-    //     program_state.camera_inverse = this.initial_camera_location.map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1));
-    // }
 
     //calculates the dx, dy value to adujst the first-person camera based on mouse inputs
     //the user needs to register a mouse click before being able to move the camera with the mouse
@@ -255,7 +246,8 @@ export class Final_project extends Scene {
         //TODO 靶子重新做，一个shape 加 texture 方便后期坐collision detection
 
         let center = model_transform.times(Mat4.scale(0.5, 0.5, 0.1));
-        this.shapes.sphere.draw(context, program_state, center, this.materials.sun.override({color: color(1, 0, 0, 1)}));
+        let target_color = color(1, 0, 0, 1);
+        this.shapes.sphere.draw(context, program_state, center, this.materials.sun.override({color: target_color}));
         center = center.times(Mat4.scale(2.0, 2.0, 10.0));
         let ring = center.times(Mat4.scale(3, 3, 0.1));
         this.shapes.ring.draw(context, program_state, ring, this.materials.ring);
@@ -269,7 +261,8 @@ export class Final_project extends Scene {
         let gun_T = model_transform.times(Mat4.translation(0,0,5))
         this.shapes.gun_s.draw(context, program_state, gun_T, this.materials.gun_m);
 
-        // TODO bullet would be shooting from the gun transformation (with some modification)
+
+
 
 
 
