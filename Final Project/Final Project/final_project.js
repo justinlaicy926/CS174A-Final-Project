@@ -240,7 +240,7 @@ export class Final_project extends Scene {
 
                     let model_trans = Mat4.translation(position[0], position[1], position[2])
                         .times(Mat4.rotation(animation_process * 50, .3, .6, .2))
-                    this.shapes.sphere.draw(context, program_state, model_trans, this.materials.sun.override({color: color(1, 0, 0, 1)}));
+                    this.shapes.sphere.draw(context, program_state, model_trans, this.materials.sun.override({color: color(0, 1, 0, 1)}));
                 }
             }
         }
