@@ -26,7 +26,7 @@ const {Cube, Textured_Phong} = defs
 //     }
 
 const zombie = defs.zombie =
-    class gun extends Shape {constructor() {
+    class z1 extends Shape {constructor() {
         super("position", "normal", "texture_coord");
 
         const head = Mat4.scale(1, 1,1);
@@ -41,7 +41,7 @@ const zombie = defs.zombie =
     }
 
 const conehead_zombie = defs.conehead_zombie =
-    class gun extends Shape {constructor() {
+    class z2 extends Shape {constructor() {
         super("position", "normal", "texture_coord");
 
         const cone = Mat4.scale(1, 1, 1);
@@ -49,10 +49,47 @@ const conehead_zombie = defs.conehead_zombie =
         const body = Mat4.scale(1.5, 2, 1);
         const legs = Mat4.scale(0.5, 1.5, 0.5);
 
+        defs.Cone_Tip.insert_transformed_copy_into(this, [10, 10, [[0.5, 1], [0, 1]]], cone.times(Mat4.translation(0, 6, 0)).times(Mat4.rotation(-Math.PI/2, 1, 0, 0)).times(Mat4.scale(1, 2, 1)));
+        defs.Cube.insert_transformed_copy_into(this, [10, 10], head.times(Mat4.translation(0,4,0)));
+        // move the cube down
+        defs.Cube.insert_transformed_copy_into(this, [] , body.times(Mat4.translation(0, 0.25, 0)));
+        defs.Cube.insert_transformed_copy_into(this, [] , legs.times(Mat4.translation(-1.5,-2, 0)));
+        defs.Cube.insert_transformed_copy_into(this, [] , legs.times(Mat4.translation(1.5,-2, 0)));
+    }
+    }
+
+const small_dance_zombie = defs.small_dance_zombie =
+    class z3 extends Shape {constructor() {
+        super("position", "normal", "texture_coord");
+
+        const cone = Mat4.scale(1, 1, 1);
+        const head = Mat4.scale(1, 1,1);
+        const body = Mat4.scale(1.5, 2, 1);
+        const left_leg = Mat4.scale(1.5, 0.5, 1.5);
+        const right_leg = Mat4.scale(0.5, 1.5, 0.5);
+
         defs.Cone_Tip.insert_transformed_copy_into(this, [], cone.times(Mat4.translation(0, 6, 0)));
         defs.Cube.insert_transformed_copy_into(this, [10, 10], head.times(Mat4.translation(0,4,0)));
         // move the cube down
         defs.Cube.insert_transformed_copy_into(this, [] , body.times(Mat4.translation(0, 0.25, 0)));
+        defs.Cube.insert_transformed_copy_into(this, [] , left_leg.times(Mat4.translation(-1.5,-2, 0)));
+        defs.Cube.insert_transformed_copy_into(this, [] , right_leg.times(Mat4.translation(1.5,-2, 0)));
+    }
+    }
+
+const dance_zombie = defs.dance_zombie =
+    class z4 extends Shape {constructor() {
+        super("position", "normal", "texture_coord");
+
+        const head = Mat4.scale(1, 1,1);
+        const body = Mat4.scale(1.5, 2, 1);
+        const legs = Mat4.scale(0.5, 1.5, 0.5);
+        const hands = Mat4.scale(1.5, 0.5, 0.5);
+
+        defs.Cube.insert_transformed_copy_into(this, [10, 10], head.times(Mat4.translation(0,4,0)));
+        defs.Cube.insert_transformed_copy_into(this, [] , body.times(Mat4.translation(0, 0.25, 0)));
+        defs.Cube.insert_transformed_copy_into(this, [] , hands.times(Mat4.translation(-1.5,3.5, 0)));
+        defs.Cube.insert_transformed_copy_into(this, [] , hands.times(Mat4.translation(1.5,3.5, 0)));
         defs.Cube.insert_transformed_copy_into(this, [] , legs.times(Mat4.translation(-1.5,-2, 0)));
         defs.Cube.insert_transformed_copy_into(this, [] , legs.times(Mat4.translation(1.5,-2, 0)));
     }
@@ -75,6 +112,9 @@ export class Final_project extends Scene {
             sky: new defs.Subdivision_Sphere(4),
             horizon: new Cube(),
             zombie: new defs.zombie,
+            conehead_zombie: new defs.conehead_zombie(),
+            dance_zombie: new defs.dance_zombie(),
+            small_zombie: new defs.small_dance_zombie(),
             cone: new defs.Cone_Tip(10, 20)
         };
 
@@ -93,8 +133,11 @@ export class Final_project extends Scene {
                 {ambient: 1, diffusivity: 1, color: hex_color("#ff0000")}),
 
 
-            ring: new Material(new Ring_Shader(),
-                {ambient: 1, diffusivity: 0, color: color(1, 0, 0, 1), specularity: 0, smoothness: 0}),
+            dance_zombie: new Material(new Ring_Shader(),
+                {ambient: 1, diffusivity: 0, color: color(0, 1.0, 0, 1), specularity: 0, smoothness: 0}),
+
+            small_zombie: new Material(new Ring_Shader(),
+                {ambient: 1, diffusivity: 1, color: color(0.5, 0.5, 1.0, 1), specularity: 0, smoothness: 0}),
 
             sky: new Material(new Textured_Phong(), {
                 color: hex_color("#000000"),
@@ -284,7 +327,8 @@ export class Final_project extends Scene {
         this.shapes.horizon.draw(context, program_state, horizon, this.materials.horizon)
 
         //draw zombie, vanilla
-        let zombie_transform = model_transform.times(Mat4.translation(0, 0, 10* Math.sin(ms)));
+        let zombie_transform = model_transform.times(Mat4.translation(0, 0, 8))
+            .times(Mat4.translation(0, 0, 2 * Math.sin(ms)));
         this.shapes.zombie.draw(context, program_state, zombie_transform, this.materials.zombie_m);
 
         //draw conehead zombie
@@ -292,6 +336,27 @@ export class Final_project extends Scene {
         this.shapes.zombie.draw(context, program_state, conehead_zombie_transform, this.materials.zombie_m);
         let cone_transform = model_transform.times(Mat4.translation(10,6.5,-20)).times(Mat4.rotation(-Math.PI/2, 1, 0, 0)).times(Mat4.scale(1, 2, 1));
         this.shapes.cone.draw(context, program_state, cone_transform, this.materials.cone);
+
+        //draw dance zombie
+        let dance_zombie_transform = model_transform.times(Mat4.translation(-15,0,-20)).times(Mat4.translation(2*Math.sin(ms), 0, 0));
+        this.shapes.dance_zombie.draw(context, program_state, dance_zombie_transform, this.materials.zombie_m);
+        let z1_transform = dance_zombie_transform.times(Mat4.rotation(ms, 0, 1, 0))
+            .times(Mat4.translation(8,-2,0))
+            .times(Mat4.scale(0.5, 0.5, 0.5));
+        this.shapes.small_zombie.draw(context, program_state, z1_transform, this.materials.small_zombie);
+        let z2_transform = dance_zombie_transform.times(Mat4.rotation(ms, 0, 1, 0))
+            .times(Mat4.translation(-8,-2,0))
+            .times(Mat4.scale(0.5, 0.5, 0.5));
+        this.shapes.small_zombie.draw(context, program_state, z2_transform, this.materials.small_zombie);
+        let z3_transform = dance_zombie_transform.times(Mat4.rotation(ms, 0, 1, 0))
+            .times(Mat4.translation(0,-2,8))
+            .times(Mat4.scale(0.5, 0.5, 0.5));
+        this.shapes.small_zombie.draw(context, program_state, z3_transform, this.materials.small_zombie);
+        let z4_transform = dance_zombie_transform.times(Mat4.rotation(ms, 0, 1, 0))
+            .times(Mat4.translation(0,-2,-8))
+            .times(Mat4.scale(0.5, 0.5, 0.5));
+        this.shapes.small_zombie.draw(context, program_state, z4_transform, this.materials.small_zombie);
+
 
 
     }
@@ -499,7 +564,6 @@ class Ring_Shader extends Shader {
         return `
         precision mediump float;
         varying vec4 point_position;
-        varying vec4 center;
         `;
     }
 
@@ -507,13 +571,12 @@ class Ring_Shader extends Shader {
         // ********* VERTEX SHADER *********
         // TODO:  Complete the main function of the vertex shader (Extra Credit Part II).
         return this.shared_glsl_code() + `
-        attribute vec3 position;
+        attribute vec3 position, normal;
         uniform mat4 model_transform;
         uniform mat4 projection_camera_model_transform;
         
         void main(){
           gl_Position = projection_camera_model_transform * vec4( position, 1.0 );
-          center = model_transform * vec4( 0, 0, 0, 1.0 );
           point_position = model_transform * vec4( position, 1.0 );
         }`;
     }
@@ -523,9 +586,10 @@ class Ring_Shader extends Shader {
         // TODO:  Complete the main function of the fragment shader (Extra Credit Part II).
         return this.shared_glsl_code() + `
         uniform vec4 shape_color;
+        uniform vec4 second_color;
         void main(){
-          float factor = sin(15.0 * distance(point_position.xyz, center.xyz));
-          vec4 mixed_color =  vec4(shape_color.xyz, factor);
+          float factor = 0.5 + 0.5 * sin(point_position.x * 10.0);
+          vec4 mixed_color =  factor * shape_color + (1.0 - factor) * second_color;
           gl_FragColor = mixed_color;
         }`;
     }
