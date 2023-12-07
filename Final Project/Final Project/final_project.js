@@ -25,6 +25,22 @@ const gun = defs.gun =
         }
     }
 
+const zombie = defs.zombie =
+    class gun extends Shape {constructor() {
+        super("position", "normal", "texture_coord");
+        //cylinder points down the z-direction
+        const head = Mat4.scale(2,2,2);
+        const body = Mat4.scale(3, 6, 2);
+        // make the grip tilt towards the screen
+        // const grip_angle = Mat4.rotation(0.1, 0, 0, 1);
+
+        defs.Cube.insert_transformed_copy_into(this, [10, 10], head.times(Mat4.translation(0,5,0)));
+        //fix: args for cube constructor
+        // move the cube down
+        defs.Cube.insert_transformed_copy_into(this, [] , body.times(Mat4.translation(0, 0.25, 0)));
+    }
+    }
+
 
 export class Final_project extends Scene {
     constructor() {
@@ -41,7 +57,7 @@ export class Final_project extends Scene {
             //11/26 CL
             sky: new defs.Subdivision_Sphere(4),
             horizon: new Cube(),
-            gun_s: new defs.gun
+            zombie: new defs.zombie
         };
 
         // *** Materials
@@ -73,10 +89,9 @@ export class Final_project extends Scene {
                 ambient: 1,
                 texture: new Texture("assets/grass.png", "NEAREST")}),
 
-            gun_m: new Material(new Textured_Phong(), {
-                color: hex_color("#000000"),
-                ambient: 1,
-                texture: new Texture("assets/metallic.png", "NEAREST")
+            gun_m: new Material(new defs.Phong_Shader(), {
+                color: hex_color("#337319"),
+                ambient: 0.5
 
             })
 
@@ -259,7 +274,7 @@ export class Final_project extends Scene {
 
         //TODO: gun should be moving with the camera movement
         let gun_T = model_transform.times(Mat4.translation(0,0,5))
-        this.shapes.gun_s.draw(context, program_state, gun_T, this.materials.gun_m);
+        this.shapes.zombie.draw(context, program_state, gun_T, this.materials.gun_m);
 
 
 
