@@ -9,21 +9,21 @@ const {Cube, Textured_Phong} = defs
 // define the shape of the gun
 // a gun = a cylinder (barrel) stuck on top of a stretched cube (grip),
 // with metallic texture applied on the surface
-const gun = defs.gun =
-    class gun extends Shape {constructor() {
-        super("position", "normal", "texture_coord");
-            //cylinder points down the z-direction
-            const barrel_length = Mat4.scale(0.6,0.6, 4);
-            const grip_length = Mat4.scale(0.5, 1.5, 0.5);
-            //make the grip tilt towards the screen
-            const grip_angle = Mat4.rotation(0.1, 0, 0, 1);
-
-            defs.Capped_Cylinder.insert_transformed_copy_into(this, [10, 10], barrel_length);
-            //fix: args for cube constructor
-            // move the cube down
-            defs.Cube.insert_transformed_copy_into(this, [] , grip_length.times(Mat4.translation(0, -1, 2.8)));
-        }
-    }
+// const gun = defs.gun =
+//     class gun extends Shape {constructor() {
+//         super("position", "normal", "texture_coord");
+//             //cylinder points down the z-direction
+//             const barrel_length = Mat4.scale(0.6,0.6, 4);
+//             const grip_length = Mat4.scale(0.5, 1.5, 0.5);
+//             //make the grip tilt towards the screen
+//             const grip_angle = Mat4.rotation(0.1, 0, 0, 1);
+//
+//             defs.Capped_Cylinder.insert_transformed_copy_into(this, [10, 10], barrel_length);
+//             //fix: args for cube constructor
+//             // move the cube down
+//             defs.Cube.insert_transformed_copy_into(this, [] , grip_length.times(Mat4.translation(0, -1, 2.8)));
+//         }
+//     }
 
 const zombie = defs.zombie =
     class gun extends Shape {constructor() {
@@ -33,10 +33,7 @@ const zombie = defs.zombie =
         const body = Mat4.scale(1.5, 2, 1);
         const legs = Mat4.scale(0.5, 1.5, 0.5);
 
-
         defs.Cube.insert_transformed_copy_into(this, [10, 10], head.times(Mat4.translation(0,4,0)));
-        //fix: args for cube constructor
-        // move the cube down
         defs.Cube.insert_transformed_copy_into(this, [] , body.times(Mat4.translation(0, 0.25, 0)));
         defs.Cube.insert_transformed_copy_into(this, [] , legs.times(Mat4.translation(-1.5,-2, 0)));
         defs.Cube.insert_transformed_copy_into(this, [] , legs.times(Mat4.translation(1.5,-2, 0)));
@@ -124,16 +121,11 @@ export class Final_project extends Scene {
         }
 
         this.initial_camera_location = Mat4.look_at(vec3(0, 0, 25), vec3(0, 0, 0), vec3(0, 1, 0));
-        //11/26 CL FIX: sky transform
         this.sky_transform = Mat4.identity().times(Mat4.translation(0, 0, 0)).times(Mat4.scale(100, 100, 100));
         this.animation_queue = [];
     }
 
     make_control_panel(program_state) {
-        // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
-        // this.key_triggered_button("Move Farther", ["o"], () => this.attached = () => this.farther);
-        // this.new_line();
-        // this.key_triggered_button("Move Closer", ["Control", "1"], () => this.attached = () => this.closer);
     }
 
     my_mouse_down(e, pos, context, program_state) {
@@ -165,50 +157,48 @@ export class Final_project extends Scene {
 
     //calculates the dx, dy value to adujst the first-person camera based on mouse inputs
     //the user needs to register a mouse click before being able to move the camera with the mouse
-    FPSCamera(context, program_state){
-        let X = 0;
-        let Y = 0;
-        let mouse_move = false;
-
-        //listen for mouse click to begin adjusting the camera
-        document.addEventListener('mousedown', (event) => {
-            mouse_move = true;
-        });
-
-        // Add event listeners for mouse movements
-        document.addEventListener('mousedown', (event) => {
-            X = event.clientX;
-            Y = event.clientY;
-        });
-
-        document.addEventListener('mousemove', (event) => {
-            // Calculate the change in mouse position
-            if (mouse_move){
-                let deltaX = event.clientX - X;
-                let deltaY = event.clientY - Y;
-
-                // Update the camera orientation based on mouse movement
-                const sensitivity = 0.1; // Adjust sensitivity as needed
-                let moveX = Mat4.translation(deltaX * sensitivity, 0, 0);
-                let moveY = Mat4.translation(0, deltaY * sensitivity, 0);
-                let rotateX = Mat4.rotation(deltaY * sensitivity, 1, 0, 0);
-                let rotateY = Mat4.rotation(deltaX * sensitivity, 0, 1, 0);
-
-                // Combine rotations to update the camera orientation
-                this.initial_camera_location = this.initial_camera_location.times(moveX)
-                    .times(rotateX)
-                    .times(moveY)
-                    .times(rotateY);
-
-                // Update previous mouse position
-                X = event.clientX;
-                Y = event.clientY;
-            }
-
-
-        });
-
-    }
+    // FPSCamera(context, program_state){
+    //     let X = 0;
+    //     let Y = 0;
+    //     let mouse_move = false;
+    //
+    //     //listen for mouse click to begin adjusting the camera
+    //     document.addEventListener('mousedown', (event) => {
+    //         mouse_move = true;
+    //     });
+    //
+    //     // Add event listeners for mouse movements
+    //     document.addEventListener('mousedown', (event) => {
+    //         X = event.clientX;
+    //         Y = event.clientY;
+    //     });
+    //
+    //     document.addEventListener('mousemove', (event) => {
+    //         // Calculate the change in mouse position
+    //         if (mouse_move){
+    //             let deltaX = event.clientX - X;
+    //             let deltaY = event.clientY - Y;
+    //
+    //             // Update the camera orientation based on mouse movement
+    //             const sensitivity = 0.1; // Adjust sensitivity as needed
+    //             let moveX = Mat4.translation(deltaX * sensitivity, 0, 0);
+    //             let moveY = Mat4.translation(0, deltaY * sensitivity, 0);
+    //             let rotateX = Mat4.rotation(deltaY * sensitivity, 1, 0, 0);
+    //             let rotateY = Mat4.rotation(deltaX * sensitivity, 0, 1, 0);
+    //
+    //             // Combine rotations to update the camera orientation
+    //             this.initial_camera_location = this.initial_camera_location.times(moveX)
+    //                 .times(rotateX)
+    //                 .times(moveY)
+    //                 .times(rotateY);
+    //
+    //             // Update previous mouse position
+    //             X = event.clientX;
+    //             Y = event.clientY;
+    //         }
+    //     });
+    //
+    // }
 
     display(context, program_state) {
         // display():  Called once per frame of animation.
@@ -294,7 +284,7 @@ export class Final_project extends Scene {
         this.shapes.horizon.draw(context, program_state, horizon, this.materials.horizon)
 
         //draw zombie, vanilla
-        let zombie_transform = model_transform.times(Mat4.translation(0,0,-10))
+        let zombie_transform = model_transform.times(Mat4.translation(0, 0, 10* Math.sin(ms)));
         this.shapes.zombie.draw(context, program_state, zombie_transform, this.materials.zombie_m);
 
         //draw conehead zombie
@@ -302,30 +292,6 @@ export class Final_project extends Scene {
         this.shapes.zombie.draw(context, program_state, conehead_zombie_transform, this.materials.zombie_m);
         let cone_transform = model_transform.times(Mat4.translation(10,6.5,-20)).times(Mat4.rotation(-Math.PI/2, 1, 0, 0)).times(Mat4.scale(1, 2, 1));
         this.shapes.cone.draw(context, program_state, cone_transform, this.materials.cone);
-
-
-
-
-
-
-        // //11/27 CL
-        // this.FPSCamera();
-
-
-        // this.farther = this.initial_camera_location.times(Mat4.translation(0, 0, 5));
-        // this.closer = this.initial_camera_location.times(Mat4.translation(0, 0, -5));
-        // // // this.planet_2 = Mat4.inverse(planet2.times(Mat4.translation(0, 0, 5)));
-        // // // this.planet_3 = Mat4.inverse(planet3.times(Mat4.translation(0, 0, 5)));
-        // // // this.planet_4 = Mat4.inverse(planet4.times(Mat4.translation(0, 0, 5)));
-        // // // this.moon = Mat4.inverse(moon.times(Mat4.translation(0, 0, 5)));
-        // if (this.attached !== undefined) {
-        //     let desired = this.attached();
-        //     program_state.camera_inverse = desired.map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1));
-        //     //     // this.attached() = null;
-        // }
-
-        // //11/26 CL Fix: draw sky, sky lighting not working
-        // program_state.lights = [new Light(vec4(0, -1, 1, 0), color(1, 1, 1, 1), 10000)];
 
 
     }
