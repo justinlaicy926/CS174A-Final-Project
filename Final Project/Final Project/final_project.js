@@ -29,15 +29,15 @@ const zombie = defs.zombie =
     class gun extends Shape {constructor() {
         super("position", "normal", "texture_coord");
         //cylinder points down the z-direction
-        const head = Mat4.scale(2,2,2);
-        const body = Mat4.scale(3, 6, 2);
+        const head = Mat4.scale(1, 1,1);
+        const body = Mat4.scale(1.5, 3, 1);
         // make the grip tilt towards the screen
         // const grip_angle = Mat4.rotation(0.1, 0, 0, 1);
 
-        defs.Cube.insert_transformed_copy_into(this, [10, 10], head.times(Mat4.translation(0,5,0)));
+        defs.Cube.insert_transformed_copy_into(this, [10, 10], head.times(Mat4.translation(0,4,0)));
         //fix: args for cube constructor
         // move the cube down
-        defs.Cube.insert_transformed_copy_into(this, [] , body.times(Mat4.translation(0, 0.25, 0)));
+        defs.Cube.insert_transformed_copy_into(this, [] , body.times(Mat4.translation(0, -0.1, 0)));
     }
     }
 
