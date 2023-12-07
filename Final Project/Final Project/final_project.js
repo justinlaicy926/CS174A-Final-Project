@@ -258,11 +258,6 @@ export class Final_project extends Scene {
         const ms = program_state.animation_time/1000;
         let model_transform = Mat4.identity();
 
-        // const light_position = vec4(10, 10, 10, 1);
-        // program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
-
-        //TODO 靶子重新做，一个shape 加 texture 方便后期坐collision detection
-
         let center = model_transform.times(Mat4.scale(0.5, 0.5, 0.1));
         let target_color = color(1, 0, 0, 1);
         this.shapes.sphere.draw(context, program_state, center, this.materials.sun.override({color: target_color}));
