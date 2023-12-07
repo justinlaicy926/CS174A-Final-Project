@@ -28,15 +28,32 @@ const gun = defs.gun =
 const zombie = defs.zombie =
     class gun extends Shape {constructor() {
         super("position", "normal", "texture_coord");
-        //cylinder points down the z-direction
+
         const head = Mat4.scale(1, 1,1);
         const body = Mat4.scale(1.5, 2, 1);
         const legs = Mat4.scale(0.5, 1.5, 0.5);
-        // make the grip tilt towards the screen
-        // const grip_angle = Mat4.rotation(0.1, 0, 0, 1);
+
 
         defs.Cube.insert_transformed_copy_into(this, [10, 10], head.times(Mat4.translation(0,4,0)));
         //fix: args for cube constructor
+        // move the cube down
+        defs.Cube.insert_transformed_copy_into(this, [] , body.times(Mat4.translation(0, 0.25, 0)));
+        defs.Cube.insert_transformed_copy_into(this, [] , legs.times(Mat4.translation(-1.5,-2, 0)));
+        defs.Cube.insert_transformed_copy_into(this, [] , legs.times(Mat4.translation(1.5,-2, 0)));
+    }
+    }
+
+const conehead_zombie = defs.conehead_zombie =
+    class gun extends Shape {constructor() {
+        super("position", "normal", "texture_coord");
+
+        const cone = Mat4.scale(1, 1, 1);
+        const head = Mat4.scale(1, 1,1);
+        const body = Mat4.scale(1.5, 2, 1);
+        const legs = Mat4.scale(0.5, 1.5, 0.5);
+
+        defs.Cone_Tip.insert_transformed_copy_into(this, [], cone.times(Mat4.translation(0, 6, 0)));
+        defs.Cube.insert_transformed_copy_into(this, [10, 10], head.times(Mat4.translation(0,4,0)));
         // move the cube down
         defs.Cube.insert_transformed_copy_into(this, [] , body.times(Mat4.translation(0, 0.25, 0)));
         defs.Cube.insert_transformed_copy_into(this, [] , legs.times(Mat4.translation(-1.5,-2, 0)));
@@ -60,7 +77,8 @@ export class Final_project extends Scene {
             //11/26 CL
             sky: new defs.Subdivision_Sphere(4),
             horizon: new Cube(),
-            zombie: new defs.zombie
+            zombie: new defs.zombie,
+            cone: new defs.Cone_Tip(10, 20)
         };
 
         // *** Materials
@@ -96,7 +114,12 @@ export class Final_project extends Scene {
                 color: hex_color("#337319"),
                 ambient: 0.5
 
-            })
+            }),
+
+            cone: new Material(new Textured_Phong(), {
+                color: hex_color("#FF7900"),
+                ambient: 0.25}
+            )
 
         }
 
@@ -260,19 +283,25 @@ export class Final_project extends Scene {
 
         let center = model_transform.times(Mat4.scale(0.5, 0.5, 0.1));
         let target_color = color(1, 0, 0, 1);
-        this.shapes.sphere.draw(context, program_state, center, this.materials.sun.override({color: target_color}));
+        //this.shapes.sphere.draw(context, program_state, center, this.materials.sun.override({color: target_color}));
         center = center.times(Mat4.scale(2.0, 2.0, 10.0));
         let ring = center.times(Mat4.scale(3, 3, 0.1));
-        this.shapes.ring.draw(context, program_state, ring, this.materials.ring);
+        //this.shapes.ring.draw(context, program_state, ring, this.materials.ring);
 
         this.shapes.sky.draw(context, program_state, this.sky_transform, this.materials.sky);
 
         let horizon = model_transform.times(Mat4.scale(150, 0.5, 150)).times(Mat4.translation(0, -10, 0));
         this.shapes.horizon.draw(context, program_state, horizon, this.materials.horizon)
 
-        //TODO: gun should be moving with the camera movement
-        let gun_T = model_transform.times(Mat4.translation(0,0,5))
-        this.shapes.zombie.draw(context, program_state, gun_T, this.materials.zombie_m);
+        //draw zombie, vanilla
+        let zombie_transform = model_transform.times(Mat4.translation(0,0,-10))
+        this.shapes.zombie.draw(context, program_state, zombie_transform, this.materials.zombie_m);
+
+        //draw conehead zombie
+        let conehead_zombie_transform = model_transform.times(Mat4.translation(10,0,-20));
+        this.shapes.zombie.draw(context, program_state, conehead_zombie_transform, this.materials.zombie_m);
+        let cone_transform = model_transform.times(Mat4.translation(10,6.5,-20)).times(Mat4.rotation(-Math.PI/2, 1, 0, 0)).times(Mat4.scale(1, 2, 1));
+        this.shapes.cone.draw(context, program_state, cone_transform, this.materials.cone);
 
 
 
