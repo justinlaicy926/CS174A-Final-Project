@@ -9,21 +9,15 @@ const {Cube, Textured_Phong} = defs
 // define the shape of the gun
 // a gun = a cylinder (barrel) stuck on top of a stretched cube (grip),
 // with metallic texture applied on the surface
-// const gun = defs.gun =
-//     class gun extends Shape {constructor() {
-//         super("position", "normal", "texture_coord");
-//             //cylinder points down the z-direction
-//             const barrel_length = Mat4.scale(0.6,0.6, 4);
-//             const grip_length = Mat4.scale(0.5, 1.5, 0.5);
-//             //make the grip tilt towards the screen
-//             const grip_angle = Mat4.rotation(0.1, 0, 0, 1);
-//
-//             defs.Capped_Cylinder.insert_transformed_copy_into(this, [10, 10], barrel_length);
-//             //fix: args for cube constructor
-//             // move the cube down
-//             defs.Cube.insert_transformed_copy_into(this, [] , grip_length.times(Mat4.translation(0, -1, 2.8)));
-//         }
-//     }
+const gun = defs.gun =
+    class gun extends Shape {constructor() {
+        super("position", "normal", "texture_coord");
+            //cylinder points down the z-direction
+            const barrel_length = Mat4.scale(0.6,0.6, 3);
+
+            defs.Capped_Cylinder.insert_transformed_copy_into(this, [10, 10], barrel_length);
+        }
+    }
 
 const zombie = defs.zombie =
     class z1 extends Shape {constructor() {
@@ -95,6 +89,33 @@ const dance_zombie = defs.dance_zombie =
     }
     }
 
+const giant_zombie = defs.giant_zombie =
+    class z1 extends Shape {constructor() {
+        super("position", "normal", "texture_coord");
+
+        const head = Mat4.scale(1, 1,2);
+        const body = Mat4.scale(5, 3, 5);
+        const legs = Mat4.scale(0.5, 0.5, 0.5);
+
+        defs.Cube.insert_transformed_copy_into(this, [10, 10], head.times(Mat4.translation(0,4,0)));
+        defs.Cube.insert_transformed_copy_into(this, [] , body.times(Mat4.translation(0, 0.25, 0)));
+        defs.Cube.insert_transformed_copy_into(this, [] , legs.times(Mat4.translation(-5,-5, 0)));
+        defs.Cube.insert_transformed_copy_into(this, [] , legs.times(Mat4.translation(5,-5, 0)));
+    }
+    }
+
+const plant = defs.plant =
+    class p extends Shape {constructor() {
+        super("position", "normal", "texture_coord");
+
+        const plant_base = Mat4.scale(3, 0.25, 3);
+        const body = Mat4.scale(0.5, 3, 0.5);
+
+        defs.Cube.insert_transformed_copy_into(this, [10, 10], plant_base.times(Mat4.translation(0,4,0)));
+        defs.Cube.insert_transformed_copy_into(this, [10, 10], body.times(Mat4.translation(0,1,0)));
+    }
+    }
+
 
 export class Final_project extends Scene {
     constructor() {
@@ -115,6 +136,9 @@ export class Final_project extends Scene {
             conehead_zombie: new defs.conehead_zombie(),
             dance_zombie: new defs.dance_zombie(),
             small_zombie: new defs.small_dance_zombie(),
+            giant_zombie: new defs.giant_zombie(),
+            plant: new defs.plant(),
+            gun: new defs.gun(),
             cone: new defs.Cone_Tip(10, 20)
         };
 
@@ -130,7 +154,7 @@ export class Final_project extends Scene {
             //sun material
             sun: new Material(new defs.Phong_Shader(),
                 //color defaults to red
-                {ambient: 1, diffusivity: 1, color: hex_color("#ff0000")}),
+                {ambient: 1, diffusivity: 1, color: hex_color("#3b3f3d")}),
 
 
             dance_zombie: new Material(new Ring_Shader(),
@@ -156,6 +180,11 @@ export class Final_project extends Scene {
 
             }),
 
+            gun: new Material(new Textured_Phong(), {
+                color: hex_color("#000000"),
+                ambient: 1,
+                texture: new Texture("assets/metallic.png", "NEAREST")}),
+
             cone: new Material(new Textured_Phong(), {
                 color: hex_color("#FF7900"),
                 ambient: 0.25}
@@ -169,6 +198,9 @@ export class Final_project extends Scene {
     }
 
     make_control_panel(program_state) {
+        this.key_triggered_button("Origin", ["Control", "0"], () => this.attached = () => null);
+        this.new_line();
+        this.key_triggered_button("View shooter", ["Control", "0"], () => this.attached = () => this.shooter);
     }
 
     my_mouse_down(e, pos, context, program_state) {
@@ -327,14 +359,15 @@ export class Final_project extends Scene {
         this.shapes.horizon.draw(context, program_state, horizon, this.materials.horizon)
 
         //draw zombie, vanilla
-        let zombie_transform = model_transform.times(Mat4.translation(0, 0, 8))
+        let zombie_transform = model_transform.times(Mat4.translation(0, 0, 0))
             .times(Mat4.translation(0, 0, 2 * Math.sin(ms)));
         this.shapes.zombie.draw(context, program_state, zombie_transform, this.materials.zombie_m);
 
         //draw conehead zombie
-        let conehead_zombie_transform = model_transform.times(Mat4.translation(10,0,-20));
+        let conehead_zombie_transform = model_transform.times(Mat4.translation(10,0,-20))
+            .times(Mat4.translation(0, 0, 3 * Math.sin(ms)));
         this.shapes.zombie.draw(context, program_state, conehead_zombie_transform, this.materials.zombie_m);
-        let cone_transform = model_transform.times(Mat4.translation(10,6.5,-20)).times(Mat4.rotation(-Math.PI/2, 1, 0, 0)).times(Mat4.scale(1, 2, 1));
+        let cone_transform = conehead_zombie_transform.times(Mat4.translation(0,6.5,0)).times(Mat4.rotation(-Math.PI/2, 1, 0, 0)).times(Mat4.scale(1, 2, 1));
         this.shapes.cone.draw(context, program_state, cone_transform, this.materials.cone);
 
         //draw dance zombie
@@ -357,7 +390,25 @@ export class Final_project extends Scene {
             .times(Mat4.scale(0.5, 0.5, 0.5));
         this.shapes.small_zombie.draw(context, program_state, z4_transform, this.materials.small_zombie);
 
+        // shooter
+        let plant_transform = model_transform.times(Mat4.translation(0, -5.5, 30));
+        this.shapes.plant.draw(context, program_state, plant_transform, this.materials.zombie_m);
+        let head_transform = plant_transform.times(Mat4.translation(0, 5.5, 0));
+        this.shapes.sphere.draw(context, program_state, head_transform, this.materials.sun);
+        let gun_transform = head_transform.times(Mat4.rotation(Math.PI * 2 / 3 * ms,0,0,1))
+            .times(Mat4.translation(0, 0, -1.5));
+        this.shapes.gun.draw(context, program_state, gun_transform, this.materials.gun);
 
+        let blending_factor = 0.1;
+        this.shooter = head_transform;
+        if (typeof this.attached !== 'undefined') {
+            if (this.attached() != null) {
+                let desired = Mat4.inverse(this.attached().times(Mat4.translation(-10, 0, 20)));
+                program_state.camera_inverse = desired.map((x, i) => Vector.from(program_state.camera_inverse[i]).mix(x, blending_factor));
+            } else {
+                program_state.camera_inverse = this.initial_camera_location.map((x, i) => Vector.from(program_state.camera_inverse[i]).mix(x, blending_factor));
+            }
+        }
 
     }
 }
